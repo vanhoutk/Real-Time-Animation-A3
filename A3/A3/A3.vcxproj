@@ -156,10 +156,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Antons_maths_funcs.h" />
+    <ClInclude Include="Bone.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="PlaneRotation.h" />
     <ClInclude Include="Shader_Functions.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
