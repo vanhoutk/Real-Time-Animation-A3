@@ -9,20 +9,32 @@
 #include <windows.h>
 
 #include "Antons_maths_funcs.h" // Anton's maths functions
+#include "Mesh.h"
 
 using namespace std;
 
 class Bone {
 public:
+	Bone();
+	Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
+	Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
+
+	void addChild(Bone* child);
+	void addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false);
+	void drawBone(mat4 view, mat4 projection);
+	void rotateBone();
+private:
+	bool hasShell;
+	bool isRoot;
+	Mesh joint;
+	Mesh shell;
+
 	string name;
 	Bone* parent;
 	vector<Bone> children;
 	versor orientation;
 	mat4 local_transformation;
 	mat4 getGlobalTransformation();
-
-	Bone();
-	Bone(string, Bone* parent);
 };
 
 Bone::Bone()
@@ -30,12 +42,61 @@ Bone::Bone()
 
 }
 
-Bone::Bone(string, Bone* parent)
+Bone::Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false)
 {
+	this->name = name;
+	this->isRoot = false;
+	this->parent = parent;
+	this->local_transformation = initial_offset;
+	this->joint = joint;
+	this->shell = shell;
+	this->hasShell = hasShell;
+}
 
+Bone::Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell)
+{
+	this->name = name;
+	this->isRoot = isRoot;
+	this->parent = NULL;
+	this->local_transformation = initial_offset;
+	this->joint = joint;
+	this->shell = shell;
+	this->hasShell = hasShell;
 }
 
 mat4 Bone::getGlobalTransformation()
 {
-	return parent->local_transformation;
+	if (isRoot)
+		return local_transformation;
+	else
+		return parent->getGlobalTransformation() * local_transformation;
+}
+
+void Bone::addChild(Bone* child)
+{
+	this->children.push_back(*child);
+}
+
+void Bone::addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false)
+{
+	Bone child = Bone(name, this, initial_offset, joint, shell, hasShell);
+	this->children.push_back(child);
+}
+
+void Bone::drawBone(mat4 view, mat4 projection)
+{
+	mat4 model = getGlobalTransformation();
+	joint.drawMesh(view, projection, model);
+	if (hasShell);
+	{
+		shell.drawMesh(view, projection, model);
+	}
+
+	for (GLuint i = 0; i < this->children.size(); i++)
+		this->children[i].drawBone(view, projection);
+}
+
+void Bone::rotateBone()
+{
+
 }
