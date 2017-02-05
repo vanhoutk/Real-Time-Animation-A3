@@ -16,11 +16,11 @@ using namespace std;
 class Bone {
 public:
 	Bone();
-	Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
-	Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
+	Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell, vec4 jointColour, vec4 shellColour);
+	Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell, vec4 jointColour, vec4 shellColour);
 
 	void addChild(Bone* child);
-	void addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false);
+	void addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
 	void drawBone(mat4 view, mat4 projection);
 	void rotateBone();
 private:
@@ -28,6 +28,8 @@ private:
 	bool isRoot;
 	Mesh joint;
 	Mesh shell;
+	vec4 jointColour;
+	vec4 shellColour;
 
 	string name;
 	Bone* parent;
@@ -42,7 +44,7 @@ Bone::Bone()
 
 }
 
-Bone::Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false)
+Bone::Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false, vec4 jointColour = vec4(0.0f, 0.0f, 0.0f, 0.0f), vec4 shellColour = vec4(0.0f, 0.0f, 0.0f, 0.0f))
 {
 	this->name = name;
 	this->isRoot = false;
@@ -51,9 +53,11 @@ Bone::Bone(string name, Bone* parent, mat4 initial_offset, Mesh joint, Mesh shel
 	this->joint = joint;
 	this->shell = shell;
 	this->hasShell = hasShell;
+	this->jointColour = jointColour;
+	this->shellColour = shellColour;
 }
 
-Bone::Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell)
+Bone::Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell = Mesh(), bool hasShell = false, vec4 jointColour = vec4(0.0f, 0.0f, 0.0f, 0.0f), vec4 shellColour = vec4(0.0f, 0.0f, 0.0f, 0.0f))
 {
 	this->name = name;
 	this->isRoot = isRoot;
@@ -62,6 +66,8 @@ Bone::Bone(string name, bool isRoot, mat4 initial_offset, Mesh joint, Mesh shell
 	this->joint = joint;
 	this->shell = shell;
 	this->hasShell = hasShell;
+	this->jointColour = jointColour;
+	this->shellColour = shellColour;
 }
 
 mat4 Bone::getGlobalTransformation()
@@ -86,10 +92,10 @@ void Bone::addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell = M
 void Bone::drawBone(mat4 view, mat4 projection)
 {
 	mat4 model = getGlobalTransformation();
-	joint.drawMesh(view, projection, model);
+	joint.drawMesh(view, projection, model, jointColour);
 	if (hasShell);
 	{
-		shell.drawMesh(view, projection, model);
+		shell.drawMesh(view, projection, model, shellColour);
 	}
 
 	for (GLuint i = 0; i < this->children.size(); i++)

@@ -18,6 +18,7 @@
 #include "Mesh.h"
 #include "PlaneRotation.h"
 #include "Shader_Functions.h"
+#include "Skeleton.h"
 #include "time.h"
 
 using namespace std;
@@ -36,17 +37,18 @@ bool keys[1024];
 Camera camera(vec3(-1.5f, 2.0f, 7.5f));
 //enum Meshes { BASE_MESH, THUMB0_MESH, THUMB1_MESH, THUMB2_MESH };
 enum Meshes { HAND_MESH, JOINT_MESH, TIP_MESH, JOINT_SHELL_MESH, TIP_SHELL_MESH };
-enum Shaders { SKYBOX, PARTICLE_SHADER, BASIC_TEXTURE_SHADER };
-enum Textures { PLANE_TEXTURE };
+enum Shaders { SKYBOX, BASIC_COLOUR_SHADER, BASIC_TEXTURE_SHADER };
+enum Textures { METAL_TEXTURE };
 GLfloat cameraSpeed = 0.005f;
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw = 0.0f, pitch = 0.0f, roll = 0.0f;
 GLuint shaderProgramID[NUM_SHADERS];
 int screenWidth = 1000;
 int screenHeight = 800;
-Mesh skyboxMesh, planeMesh;
-Mesh baseMesh, thumbMesh0, thumbMesh1, thumbMesh2;
+Mesh skyboxMesh;// , planeMesh;
+//Mesh baseMesh, thumbMesh0, thumbMesh1, thumbMesh2;
 Mesh handMesh, fingerJointMesh, fingerTipMesh, jointShellMesh, tipShellMesh;
+Skeleton handSkeleton;
 vec4 upV = vec4(0.0f, 0.0f, 1.0f, 0.0f); //Up and Forward are flipped because of the initial rotation of the model
 vec4 fV = vec4(0.0f, 1.0f, 0.0f, 0.0f);
 vec4 rightV = vec4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -58,7 +60,7 @@ mat4 rotationMat;
 // | Resource Locations
 const char * meshFiles[NUM_MESHES] = { "../Meshes/hand.obj", "../Meshes/finger_joint.dae", "../Meshes/finger_tip.dae", "../Meshes/finger_joint_shell.obj", "../Meshes/finger_tip_shell.dae" };
 const char * skyboxTextureFiles[6] = { "../Textures/TCWposx.png", "../Textures/TCWnegx.png", "../Textures/TCWposy.png", "../Textures/TCWnegy.png", "../Textures/TCWposz.png", "../Textures/TCWnegz.png" };
-const char * textureFiles[NUM_TEXTURES] = { "../Textures/plane.jpg" };
+const char * textureFiles[NUM_TEXTURES] = { "../Textures/metal.jpg" };
 
 const char * vertexShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxVertexShader.txt", "../Shaders/ParticleVertexShader.txt", "../Shaders/BasicTextureVertexShader.txt" };
 const char * fragmentShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxFragmentShader.txt", "../Shaders/ParticleFragmentShader.txt", "../Shaders/BasicTextureFragmentShader.txt" };
@@ -82,20 +84,25 @@ void display()
 
 	// Draw skybox first
 	skyboxMesh.drawSkybox(view, projection);
+
+	handSkeleton.drawSkeleton(view, projection);
 	
 	// Draw the plane
 	//planeMesh.drawMesh(view, projection, model);
 	//model = scale(model, vec3(10.0f, 10.0f, 10.0f));
-	vec4 colour = vec4(1.0f, 1.0f, 0.0f, 1.0f);
-	vec4 colour2 = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	//vec4 colour = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+	//vec4 colour2 = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	handMesh.drawMesh(view, projection, model, colour2);
+	/*handMesh.drawMesh(view, projection, model, colour2);
 
+	mat4 thumb_model = translate(rotate_y_deg(scale(model, vec3(0.75f, 1.0f, 1.0f)), 30.0f), vec3(3.0f, 0.0f, 2.5f));
 	mat4 finger1_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, 3.1f));
 	mat4 finger2_model = translate(model, vec3(-4.0f, 0.0f, 0.9f));
 	mat4 finger3_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, -1.3f));
 	mat4 finger4_model = translate(scale(model, vec3(0.7f, 0.7f, 0.7f)), vec3(-4.0f, 0.0f, -3.1f));
 
+	fingerJointMesh.drawMesh(view, projection, thumb_model, colour);
+	jointShellMesh.drawMesh(view, projection, thumb_model, colour2);
 	fingerJointMesh.drawMesh(view, projection, finger1_model, colour);
 	jointShellMesh.drawMesh(view, projection, finger1_model, colour2);
 	fingerJointMesh.drawMesh(view, projection, finger2_model, colour);
@@ -105,11 +112,18 @@ void display()
 	fingerJointMesh.drawMesh(view, projection, finger4_model, colour);
 	jointShellMesh.drawMesh(view, projection, finger4_model, colour2);
 
-	finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
-	finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
-	finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
-	finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
+	thumb_model = thumb_model * translate(rotate_y_deg(identity_mat4(), -5.0f), vec3(-5.0f, 0.0f, 0.0f));
+	finger1_model = finger1_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger2_model = finger2_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger3_model = finger3_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger4_model = finger4_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	//finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
+	//finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
+	//finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
+	//finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
 
+	fingerJointMesh.drawMesh(view, projection, thumb_model, colour);
+	jointShellMesh.drawMesh(view, projection, thumb_model, colour2);
 	fingerJointMesh.drawMesh(view, projection, finger1_model, colour);
 	jointShellMesh.drawMesh(view, projection, finger1_model, colour2);
 	fingerJointMesh.drawMesh(view, projection, finger2_model, colour);
@@ -119,15 +133,22 @@ void display()
 	fingerJointMesh.drawMesh(view, projection, finger4_model, colour);
 	jointShellMesh.drawMesh(view, projection, finger4_model, colour2);
 
-	finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
-	finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
-	finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
-	finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
+	thumb_model = thumb_model * translate(rotate_y_deg(identity_mat4(), -10.0f), vec3(-5.0f, 0.0f, 0.0f));
+	finger1_model = finger1_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger2_model = finger2_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger3_model = finger3_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	finger4_model = finger4_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
+	//finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
+	//finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
+	//finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
+	//finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
 
 	//mat4 local_model = rotate_z_deg(identity_mat4(), -90.0f);
 
 	//model = model * local_model;
 
+	fingerTipMesh.drawMesh(view, projection, thumb_model, colour);
+	tipShellMesh.drawMesh(view, projection, thumb_model, colour2);
 	fingerTipMesh.drawMesh(view, projection, finger1_model, colour);
 	tipShellMesh.drawMesh(view, projection, finger1_model, colour2);
 	fingerTipMesh.drawMesh(view, projection, finger2_model, colour);
@@ -140,7 +161,7 @@ void display()
 	//baseMesh.drawMesh(view, projection, model, colour);
 	//thumbMesh0.drawMesh(view, projection, model);
 	//thumbMesh1.drawMesh(view, projection, model);
-	//thumbMesh2.drawMesh(view, projection, model);
+	//thumbMesh2.drawMesh(view, projection, model);*/
 
 	glutSwapBuffers();
 }
@@ -182,31 +203,36 @@ void init()
 	//planeMesh.generateObjectBufferMesh(meshFiles[PLANE_MESH]);
 	//planeMesh.loadTexture(textureFiles[PLANE_TEXTURE]);
 
-	//baseMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	//baseMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	//baseMesh.generateObjectBufferMesh(meshFiles[BASE_MESH]);
 
-	handMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	handMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
 	handMesh.generateObjectBufferMesh(meshFiles[HAND_MESH]);
+	handMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	fingerJointMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	fingerJointMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
 	fingerJointMesh.generateObjectBufferMesh(meshFiles[JOINT_MESH]);
+	fingerJointMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	fingerTipMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	fingerTipMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
 	fingerTipMesh.generateObjectBufferMesh(meshFiles[TIP_MESH]);
+	fingerTipMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	jointShellMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	jointShellMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	jointShellMesh.generateObjectBufferMesh(meshFiles[JOINT_SHELL_MESH]);
 
-	tipShellMesh = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	tipShellMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	tipShellMesh.generateObjectBufferMesh(meshFiles[TIP_SHELL_MESH]);
 
-	//thumbMesh0 = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	handSkeleton.createHand(handMesh, Mesh(), fingerJointMesh, jointShellMesh, fingerTipMesh, tipShellMesh);
+
+	//thumbMesh0 = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	//thumbMesh0.generateObjectBufferMesh(meshFiles[THUMB0_MESH]);
 
-	//thumbMesh1 = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	//thumbMesh1 = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	//thumbMesh1.generateObjectBufferMesh(meshFiles[THUMB1_MESH]);
 
-	//thumbMesh2 = Mesh(&shaderProgramID[PARTICLE_SHADER]);
+	//thumbMesh2 = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	//thumbMesh2.generateObjectBufferMesh(meshFiles[THUMB2_MESH]);
 }
 
