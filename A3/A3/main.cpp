@@ -91,10 +91,10 @@ void display()
 
 	handMesh.drawMesh(view, projection, model, colour2);
 
-	mat4 finger1_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, 3.2f));
-	mat4 finger2_model = translate(model, vec3(-4.0f, 0.0f, 1.0f));
-	mat4 finger3_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, -1.2f));
-	mat4 finger4_model = translate(scale(model, vec3(0.7f, 0.7f, 0.7f)), vec3(-4.0f, 0.0f, -3.0f));
+	mat4 finger1_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, 3.1f));
+	mat4 finger2_model = translate(model, vec3(-4.0f, 0.0f, 0.9f));
+	mat4 finger3_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, -1.3f));
+	mat4 finger4_model = translate(scale(model, vec3(0.7f, 0.7f, 0.7f)), vec3(-4.0f, 0.0f, -3.1f));
 
 	fingerJointMesh.drawMesh(view, projection, finger1_model, colour);
 	jointShellMesh.drawMesh(view, projection, finger1_model, colour2);
