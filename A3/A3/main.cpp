@@ -34,7 +34,7 @@ using namespace std;
 
 bool firstMouse = true;
 bool keys[1024];
-Camera camera(vec3(-1.5f, 2.0f, 7.5f));
+Camera camera(vec3(-1.5f, 2.0f, 15.0f));
 //enum Meshes { BASE_MESH, THUMB0_MESH, THUMB1_MESH, THUMB2_MESH };
 enum Meshes { HAND_MESH, JOINT_MESH, TIP_MESH, JOINT_SHELL_MESH, TIP_SHELL_MESH };
 enum Shaders { SKYBOX, BASIC_COLOUR_SHADER, BASIC_TEXTURE_SHADER };
@@ -43,6 +43,7 @@ GLfloat cameraSpeed = 0.005f;
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw = 0.0f, pitch = 0.0f, roll = 0.0f;
 GLuint shaderProgramID[NUM_SHADERS];
+GLuint boneIndex = 0;
 int screenWidth = 1000;
 int screenHeight = 800;
 Mesh skyboxMesh;// , planeMesh;
@@ -86,82 +87,6 @@ void display()
 	skyboxMesh.drawSkybox(view, projection);
 
 	handSkeleton.drawSkeleton(view, projection);
-	
-	// Draw the plane
-	//planeMesh.drawMesh(view, projection, model);
-	//model = scale(model, vec3(10.0f, 10.0f, 10.0f));
-	//vec4 colour = vec4(1.0f, 1.0f, 0.0f, 1.0f);
-	//vec4 colour2 = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-	/*handMesh.drawMesh(view, projection, model, colour2);
-
-	mat4 thumb_model = translate(rotate_y_deg(scale(model, vec3(0.75f, 1.0f, 1.0f)), 30.0f), vec3(3.0f, 0.0f, 2.5f));
-	mat4 finger1_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, 3.1f));
-	mat4 finger2_model = translate(model, vec3(-4.0f, 0.0f, 0.9f));
-	mat4 finger3_model = translate(scale(model, vec3(0.9f, 0.9f, 0.9f)), vec3(-4.0f, 0.0f, -1.3f));
-	mat4 finger4_model = translate(scale(model, vec3(0.7f, 0.7f, 0.7f)), vec3(-4.0f, 0.0f, -3.1f));
-
-	fingerJointMesh.drawMesh(view, projection, thumb_model, colour);
-	jointShellMesh.drawMesh(view, projection, thumb_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger1_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger1_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger2_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger2_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger3_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger3_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger4_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger4_model, colour2);
-
-	thumb_model = thumb_model * translate(rotate_y_deg(identity_mat4(), -5.0f), vec3(-5.0f, 0.0f, 0.0f));
-	finger1_model = finger1_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger2_model = finger2_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger3_model = finger3_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger4_model = finger4_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	//finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
-	//finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
-	//finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
-	//finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
-
-	fingerJointMesh.drawMesh(view, projection, thumb_model, colour);
-	jointShellMesh.drawMesh(view, projection, thumb_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger1_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger1_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger2_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger2_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger3_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger3_model, colour2);
-	fingerJointMesh.drawMesh(view, projection, finger4_model, colour);
-	jointShellMesh.drawMesh(view, projection, finger4_model, colour2);
-
-	thumb_model = thumb_model * translate(rotate_y_deg(identity_mat4(), -10.0f), vec3(-5.0f, 0.0f, 0.0f));
-	finger1_model = finger1_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger2_model = finger2_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger3_model = finger3_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	finger4_model = finger4_model * translate(identity_mat4(), vec3(-5.0f, 0.0f, 0.0f));
-	//finger1_model = translate(finger1_model, vec3(-4.5f, 0.0f, 0.0f));
-	//finger2_model = translate(finger2_model, vec3(-5.0f, 0.0f, 0.0f));
-	//finger3_model = translate(finger3_model, vec3(-4.5f, 0.0f, 0.0f));
-	//finger4_model = translate(finger4_model, vec3(-3.5f, 0.0f, 0.0f));
-
-	//mat4 local_model = rotate_z_deg(identity_mat4(), -90.0f);
-
-	//model = model * local_model;
-
-	fingerTipMesh.drawMesh(view, projection, thumb_model, colour);
-	tipShellMesh.drawMesh(view, projection, thumb_model, colour2);
-	fingerTipMesh.drawMesh(view, projection, finger1_model, colour);
-	tipShellMesh.drawMesh(view, projection, finger1_model, colour2);
-	fingerTipMesh.drawMesh(view, projection, finger2_model, colour);
-	tipShellMesh.drawMesh(view, projection, finger2_model, colour2);
-	fingerTipMesh.drawMesh(view, projection, finger3_model, colour);
-	tipShellMesh.drawMesh(view, projection, finger3_model, colour2);
-	fingerTipMesh.drawMesh(view, projection, finger4_model, colour);
-	tipShellMesh.drawMesh(view, projection, finger4_model, colour2);
-
-	//baseMesh.drawMesh(view, projection, model, colour);
-	//thumbMesh0.drawMesh(view, projection, model);
-	//thumbMesh1.drawMesh(view, projection, model);
-	//thumbMesh2.drawMesh(view, projection, model);*/
 
 	glutSwapBuffers();
 }
@@ -176,6 +101,35 @@ void processInput()
 		camera.ProcessKeyboard(LEFT, cameraSpeed);
 	if (keys[GLUT_KEY_RIGHT])
 		camera.ProcessKeyboard(RIGHT, cameraSpeed);
+
+	if (keys['p'])
+		handSkeleton.bones[boneIndex]->rollJoint(radians(1.0f));
+	if (keys['o'])
+		handSkeleton.bones[boneIndex]->bendJoint(radians(1.0f));
+	if(keys['i'])
+		handSkeleton.bones[boneIndex]->pivotJoint(radians(1.0f));
+
+	if (keys['1'])
+		boneIndex = 1;
+	if (keys['2'])
+		boneIndex = 2;
+	if (keys['3'])
+		boneIndex = 3;
+	if (keys['4'])
+		boneIndex = 4;
+	if (keys['5'])
+		boneIndex = 5;
+	if (keys['6'])
+		boneIndex = 6;
+	if (keys['7'])
+		boneIndex = 7;
+	if (keys['8'])
+		boneIndex = 8;
+	if (keys['9'])
+		boneIndex = 9;
+	if (keys['0'])
+		boneIndex = 0;
+
 
 	if (keys[(char)27])
 		exit(0);
