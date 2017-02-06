@@ -16,11 +16,17 @@ class Skeleton {
 public:
 	Bone* rootBone;
 	Bone* bones[16];
-	int numBones;
+	int numBones = 16;
 
 	Skeleton();
 	void createHand(Mesh handMesh, Mesh handShell, Mesh jointMesh, Mesh jointShell, Mesh tipMesh, Mesh tipShell);
 	void drawSkeleton(mat4 view, mat4 projection);
+	void rotateWrist360();
+	void closeAndOpenFist();
+private:
+	GLfloat count = 0.0f;
+	GLfloat speed = 0.2f;
+	bool close = true;
 };
 
 Skeleton::Skeleton()
@@ -103,4 +109,28 @@ void Skeleton::createHand(Mesh handMesh, Mesh handShell, Mesh jointMesh, Mesh jo
 void Skeleton::drawSkeleton(mat4 view, mat4 projection)
 {
 	rootBone->drawBone(view, projection);
+}
+
+void Skeleton::rotateWrist360()
+{
+	rootBone->rollJoint(radians(1.0f));
+}
+
+void Skeleton::closeAndOpenFist()
+{
+	if (close)
+	{
+		count += speed;
+		for (int i = 4; i < numBones; i++)
+			bones[i]->bendJoint(radians(speed));
+	}
+	else
+	{
+		count -= speed;
+		for (int i = 4; i < numBones; i++)
+			bones[i]->bendJoint(radians(-speed));
+	}
+
+	if (count >= 90.0f || count <= 0.0f)
+		close = !close;
 }

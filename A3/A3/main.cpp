@@ -84,7 +84,7 @@ void display()
 	mat4 model = identity_mat4();
 
 	// Draw skybox first
-	skyboxMesh.drawSkybox(view, projection);
+	//skyboxMesh.drawSkybox(view, projection);
 
 	handSkeleton.drawSkeleton(view, projection);
 
@@ -137,6 +137,8 @@ void processInput()
 
 void updateScene()
 {
+	if (1 == 1)
+		handSkeleton.closeAndOpenFist();
 	processInput();
 	// Draw the next frame
 	glutPostRedisplay();
