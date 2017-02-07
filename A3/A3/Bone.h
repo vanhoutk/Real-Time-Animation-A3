@@ -22,7 +22,7 @@ public:
 
 	void addChild(Bone* child);
 	void addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell, bool hasShell);
-	void drawBone(mat4 view, mat4 projection);
+	void drawBone(mat4 view, mat4 projection, vec4 viewPosition);
 	void bendJoint(GLfloat rotation);
 	void rollJoint(GLfloat rotation);
 	void pivotJoint(GLfloat rotation);
@@ -110,17 +110,17 @@ void Bone::addChild(string name, mat4 initial_offset, Mesh joint, Mesh shell = M
 	this->children.push_back(&child);
 }
 
-void Bone::drawBone(mat4 view, mat4 projection)
+void Bone::drawBone(mat4 view, mat4 projection, vec4 viewPosition = vec4(0.0f, 0.0f, 0.0f, 0.0f))
 {
 	mat4 model = this->getGlobalTransformation();
-	this->joint.drawMesh(view, projection, model, this->jointColour);
+	this->joint.drawMesh(view, projection, model, this->jointColour, viewPosition);
 	if (hasShell);
 	{
-		this->shell.drawMesh(view, projection, model, this->shellColour);
+		this->shell.drawMesh(view, projection, model, this->shellColour, viewPosition);
 	}
 
 	for (GLuint i = 0; i < this->children.size(); i++)
-		this->children[i]->drawBone(view, projection);
+		this->children[i]->drawBone(view, projection, viewPosition);
 }
 
 void Bone::bendJoint(GLfloat rotation)

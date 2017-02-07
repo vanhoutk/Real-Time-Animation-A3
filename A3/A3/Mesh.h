@@ -36,7 +36,7 @@ public:
 	void generateObjectBufferMesh();
 	void generateObjectBufferMesh(const char* fileName);
 	bool loadTexture(const char* fileName);
-	void drawMesh(mat4 view, mat4 projection, mat4 model, vec4 colour);
+	void drawMesh(mat4 view, mat4 projection, mat4 model, vec4 colour, vec4 viewPosition);
 
 	// Skybox functions
 	void setupSkybox(const char ** skyboxTextureFiles);
@@ -272,7 +272,7 @@ bool Mesh::loadTexture(const char* fileName)
 	return true;
 }
 
-void Mesh::drawMesh(mat4 view, mat4 projection, mat4 model, vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f))
+void Mesh::drawMesh(mat4 view, mat4 projection, mat4 model, vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f), vec4 viewPosition = vec4(0.0f, 0.0f, 0.0f, 0.0f))
 {
 	glUseProgram(shaderProgramID);
 	glBindVertexArray(meshVAO);
@@ -286,7 +286,8 @@ void Mesh::drawMesh(mat4 view, mat4 projection, mat4 model, vec4 colour = vec4(0
 		glUniform1i(glGetUniformLocation(shaderProgramID, "basic_texture"), 0);
 	}
 
-	glUniform4fv(glGetUniformLocation(shaderProgramID, "colour"), 1, colour.v);
+	glUniform4fv(glGetUniformLocation(shaderProgramID, "objectColour"), 1, colour.v);
+	glUniform4fv(glGetUniformLocation(shaderProgramID, "viewPosition"), 1, viewPosition.v);
 
 	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 

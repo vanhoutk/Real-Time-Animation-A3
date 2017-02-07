@@ -20,7 +20,7 @@ public:
 
 	Skeleton();
 	void createHand(Mesh handMesh, Mesh handShell, Mesh jointMesh, Mesh jointShell, Mesh tipMesh, Mesh tipShell);
-	void drawSkeleton(mat4 view, mat4 projection);
+	void drawSkeleton(mat4 view, mat4 projection, vec4 viewPosition);
 	void rotateWrist360();
 	void closeFist();
 	void openFist();
@@ -114,9 +114,9 @@ void Skeleton::createHand(Mesh handMesh, Mesh handShell, Mesh jointMesh, Mesh jo
 	bones[14]->addChild(bones[15]);
 }
 
-void Skeleton::drawSkeleton(mat4 view, mat4 projection)
+void Skeleton::drawSkeleton(mat4 view, mat4 projection, vec4 viewPosition = vec4(0.0f, 0.0f, 0.0f, 0.0f))
 {
-	rootBone->drawBone(view, projection);
+	rootBone->drawBone(view, projection, viewPosition);
 }
 
 void Skeleton::rotateWrist360()

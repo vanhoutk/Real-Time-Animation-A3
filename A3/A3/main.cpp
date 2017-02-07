@@ -29,7 +29,7 @@ using namespace std;
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))  // Macro for indexing vertex buffer
 
 #define NUM_MESHES   6
-#define NUM_SHADERS	 3
+#define NUM_SHADERS	 5
 #define NUM_TEXTURES 1
 
 bool firstMouse = true;
@@ -38,7 +38,7 @@ Camera camera(vec3(-1.5f, 2.0f, 10.0f));
 //enum Meshes { BASE_MESH, THUMB0_MESH, THUMB1_MESH, THUMB2_MESH };
 enum Meshes { HAND_MESH, HAND_SHELL_MESH, JOINT_MESH, TIP_MESH, JOINT_SHELL_MESH, TIP_SHELL_MESH };
 enum Modes { ROTATE_HAND, CLOSE_FIST, OPEN_FIST, CLOSE_AND_OPEN_FIST};
-enum Shaders { SKYBOX, BASIC_COLOUR_SHADER, BASIC_TEXTURE_SHADER };
+enum Shaders { SKYBOX, BASIC_COLOUR_SHADER, BASIC_TEXTURE_SHADER, LIGHT_SHADER, LIGHT_TEXTURE_SHADER };
 enum Textures { METAL_TEXTURE };
 GLfloat cameraSpeed = 0.005f;
 GLfloat lastX = 400, lastY = 300;
@@ -65,8 +65,8 @@ const char * meshFiles[NUM_MESHES] = { "../Meshes/hand.obj", "../Meshes/hand_she
 const char * skyboxTextureFiles[6] = { "../Textures/TCWposx.png", "../Textures/TCWnegx.png", "../Textures/TCWposy.png", "../Textures/TCWnegy.png", "../Textures/TCWposz.png", "../Textures/TCWnegz.png" };
 const char * textureFiles[NUM_TEXTURES] = { "../Textures/metal.jpg" };
 
-const char * vertexShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxVertexShader.txt", "../Shaders/ParticleVertexShader.txt", "../Shaders/BasicTextureVertexShader.txt" };
-const char * fragmentShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxFragmentShader.txt", "../Shaders/ParticleFragmentShader.txt", "../Shaders/BasicTextureFragmentShader.txt" };
+const char * vertexShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxVertexShader.txt", "../Shaders/ParticleVertexShader.txt", "../Shaders/BasicTextureVertexShader.txt", "../Shaders/LightVertexShader.txt", "../Shaders/LightTextureVertexShader.txt" };
+const char * fragmentShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxFragmentShader.txt", "../Shaders/ParticleFragmentShader.txt", "../Shaders/BasicTextureFragmentShader.txt", "../Shaders/LightFragmentShader.txt", "../Shaders/LightTextureFragmentShader.txt" };
 
 void display()
 {
@@ -88,7 +88,9 @@ void display()
 	// Draw skybox first
 	//skyboxMesh.drawSkybox(view, projection);
 
-	handSkeleton.drawSkeleton(view, projection);
+	vec4 view_position = vec4(camera.Position.v[0], camera.Position.v[1], camera.Position.v[2], 0.0f);
+
+	handSkeleton.drawSkeleton(view, projection, view_position);
 
 	glutSwapBuffers();
 }
@@ -177,25 +179,25 @@ void init()
 	//baseMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
 	//baseMesh.generateObjectBufferMesh(meshFiles[BASE_MESH]);
 
-	handMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
+	handMesh = Mesh(&shaderProgramID[LIGHT_TEXTURE_SHADER]);
 	handMesh.generateObjectBufferMesh(meshFiles[HAND_MESH]);
 	handMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	fingerJointMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
+	fingerJointMesh = Mesh(&shaderProgramID[LIGHT_TEXTURE_SHADER]);
 	fingerJointMesh.generateObjectBufferMesh(meshFiles[JOINT_MESH]);
 	fingerJointMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	fingerTipMesh = Mesh(&shaderProgramID[BASIC_TEXTURE_SHADER]);
+	fingerTipMesh = Mesh(&shaderProgramID[LIGHT_TEXTURE_SHADER]);
 	fingerTipMesh.generateObjectBufferMesh(meshFiles[TIP_MESH]);
 	fingerTipMesh.loadTexture(textureFiles[METAL_TEXTURE]);
 
-	handShellMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
+	handShellMesh = Mesh(&shaderProgramID[LIGHT_SHADER]);
 	handShellMesh.generateObjectBufferMesh(meshFiles[HAND_SHELL_MESH]);
 
-	jointShellMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
+	jointShellMesh = Mesh(&shaderProgramID[LIGHT_SHADER]);
 	jointShellMesh.generateObjectBufferMesh(meshFiles[JOINT_SHELL_MESH]);
 
-	tipShellMesh = Mesh(&shaderProgramID[BASIC_COLOUR_SHADER]);
+	tipShellMesh = Mesh(&shaderProgramID[LIGHT_SHADER]);
 	tipShellMesh.generateObjectBufferMesh(meshFiles[TIP_SHELL_MESH]);
 
 	handSkeleton.createHand(handMesh, handShellMesh, fingerJointMesh, jointShellMesh, fingerTipMesh, tipShellMesh);
