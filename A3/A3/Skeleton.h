@@ -41,7 +41,7 @@ void Skeleton::createHand(Mesh handMesh, Mesh handShell, Mesh jointMesh, Mesh jo
 	vec4 joint_colour = vec4(1.0f, 1.0f, 0.0f, 1.0f);
 	vec4 shell_colour = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	bones[0] = new Bone("hand", true, scale(identity_mat4(), vec3(0.2f, 0.2f, 0.2f)), handMesh, Mesh(), false, joint_colour, shell_colour);
+	bones[0] = new Bone("hand", true, scale(identity_mat4(), vec3(0.2f, 0.2f, 0.2f)), handMesh, handShell, true, joint_colour, shell_colour);
 	rootBone = bones[0];
 
 	// Thumb
