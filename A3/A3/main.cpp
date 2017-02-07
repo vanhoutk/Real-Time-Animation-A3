@@ -34,9 +34,10 @@ using namespace std;
 
 bool firstMouse = true;
 bool keys[1024];
-Camera camera(vec3(-1.5f, 2.0f, 15.0f));
+Camera camera(vec3(-1.5f, 2.0f, 10.0f));
 //enum Meshes { BASE_MESH, THUMB0_MESH, THUMB1_MESH, THUMB2_MESH };
 enum Meshes { HAND_MESH, JOINT_MESH, TIP_MESH, JOINT_SHELL_MESH, TIP_SHELL_MESH };
+enum Modes { ROTATE_HAND, CLOSE_FIST, OPEN_FIST, CLOSE_AND_OPEN_FIST};
 enum Shaders { SKYBOX, BASIC_COLOUR_SHADER, BASIC_TEXTURE_SHADER };
 enum Textures { METAL_TEXTURE };
 GLfloat cameraSpeed = 0.005f;
@@ -44,6 +45,7 @@ GLfloat lastX = 400, lastY = 300;
 GLfloat yaw = 0.0f, pitch = 0.0f, roll = 0.0f;
 GLuint shaderProgramID[NUM_SHADERS];
 GLuint boneIndex = 0;
+GLuint animationMode = -1;
 int screenWidth = 1000;
 int screenHeight = 800;
 Mesh skyboxMesh;// , planeMesh;
@@ -102,22 +104,22 @@ void processInput()
 	if (keys[GLUT_KEY_RIGHT])
 		camera.ProcessKeyboard(RIGHT, cameraSpeed);
 
-	if (keys['p'])
+	/*if (keys['p'])
 		handSkeleton.bones[boneIndex]->rollJoint(radians(1.0f));
 	if (keys['o'])
 		handSkeleton.bones[boneIndex]->bendJoint(radians(1.0f));
 	if(keys['i'])
-		handSkeleton.bones[boneIndex]->pivotJoint(radians(1.0f));
+		handSkeleton.bones[boneIndex]->pivotJoint(radians(1.0f));*/
 
 	if (keys['1'])
-		boneIndex = 1;
+		animationMode = ROTATE_HAND;
 	if (keys['2'])
-		boneIndex = 2;
+		animationMode = CLOSE_FIST;
 	if (keys['3'])
-		boneIndex = 3;
+		animationMode = OPEN_FIST;
 	if (keys['4'])
-		boneIndex = 4;
-	if (keys['5'])
+		animationMode = CLOSE_AND_OPEN_FIST;
+	/*if (keys['5'])
 		boneIndex = 5;
 	if (keys['6'])
 		boneIndex = 6;
@@ -126,9 +128,9 @@ void processInput()
 	if (keys['8'])
 		boneIndex = 8;
 	if (keys['9'])
-		boneIndex = 9;
+		boneIndex = 9;*/
 	if (keys['0'])
-		boneIndex = 0;
+		animationMode = -1;
 
 
 	if (keys[(char)27])
@@ -137,8 +139,21 @@ void processInput()
 
 void updateScene()
 {
-	if (1 == 1)
+	switch (animationMode)
+	{
+	case ROTATE_HAND:
+		handSkeleton.rotateWrist360();
+		break;
+	case CLOSE_FIST:
+		handSkeleton.closeFist();
+		break;
+	case OPEN_FIST:
+		handSkeleton.openFist();
+		break;
+	case CLOSE_AND_OPEN_FIST:
 		handSkeleton.closeAndOpenFist();
+		break;
+	}
 	processInput();
 	// Draw the next frame
 	glutPostRedisplay();
